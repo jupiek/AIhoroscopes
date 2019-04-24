@@ -1,0 +1,34 @@
+---
+title: "10-335 Final Project, Spring 2019: AI Horoscopes"
+author: "Jenn Choi, Julie Kim, Sophia Yoo"
+date: "Due Thursday April 25, 2019"
+output: 
+  html_document:
+    toc:  true
+    toc_float:  true
+    code_folding:  show
+---
+
+Horoscope Template - Text
+```{r}
+signs = c("Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", 
+               "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces")
+horoscopes = cbind(paste("This is the horoscope for", signs), 
+                   paste("No this is the horoscope for", signs))
+
+data = data.frame(t(horoscopes))
+names(data) = signs
+```
+
+```{r}
+# `generate` function to choose a random horoscope given a sign
+generate = function (data, sign) {
+  horoscopes = as.character(na.omit(data[,sign]))
+  i = sample(1:length(horoscopes), 1)
+  return(horoscopes[i])
+}
+
+generate(data, "Aries")
+
+save.image(file = "data.RData")
+```
