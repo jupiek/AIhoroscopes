@@ -7,15 +7,10 @@ library(tidyverse)
 library(plyr)
 library(shiny)
 library(rsconnect)
-library(ggmap)
-library(maps)
-library(sp)
-library(plotly)
-library(scales)
-library(gridExtra)
 library(shinydashboard)
-library(png)
 library(shinythemes)
+library(png)
+library(OpenImageR)
 
 # Horoscope Template - Text
 data = read.csv("horoscopes.csv")
@@ -57,11 +52,17 @@ bday.to.sign = function (day, month) {
 }
 
 # `generate` function to choose a random horoscope given a sign
-generate = function (data, sign, weekday = NULL) {
-  horoscopes = filter(data, sign = sign)
-  horoscopes = as.character(na.omit(data[,sign]))
-  i = sample(1:length(horoscopes), 1)
-  return(horoscopes[i])
+generate = function (data, sign, weekday) {
+  horoscopes = filter(data, sign == sign) %>% 
+    filter(day_of_week == weekday)
+  i = sample(1:nrow(horoscopes), 1)
+  return(as.character(horoscopes$horoscope[i]))
+}
+
+# `recombine` function to split a horoscope by periods and paste with line breaks
+recombine = function (text) {
+  elements = unlist(strsplit(as.character(text), "\\. "))
+  return(paste(elements, collapse = ".<br/><br/>"))
 }
 
 
@@ -108,22 +109,25 @@ ui = dashboardPage(
       # First Tab Content
       tabItem(tabName = "horoscope",
               h2("My Horoscope"),
-              p("Use the dropdown menus to enter your birthday and generate 
-                 today's horoscope."),
+              p("Please select your birthday and click `Reveal Horoscope`"),
               
               fluidPage(
-                inputPanel(
-                  selectInput("month", label = "Month",
-                              choices = month.name,
-                              selectize = FALSE),
-                  selectInput("day", label = "Day",
-                              choices = NULL,
-                              selectize = FALSE),
-                  dateInput("weekday", label = "Horoscope Date", value = NULL, 
-                            min = NULL, max = NULL, format = "yyyy-mm-dd", 
-                            startview = "month", weekstart = 0, 
-                            language = "en", width = NULL)
-                ),
+                fluidRow(
+                  column(5,
+                         selectInput("month", label = HTML("Birthday<br/>Month"),
+                                     choices = month.name,
+                                     selectize = FALSE),
+                         selectInput("day", label = "Day",
+                                     choices = NULL,
+                                     selectize = FALSE)),
+                  column(5, br(),
+                         dateInput("weekday", label = "Which day's horoscope would you like to see?", 
+                                   value = NULL, min = NULL, max = NULL, 
+                                   format = "mm-dd-yyyy", 
+                                   startview = "month", weekstart = 0, 
+                                   language = "en", width = NULL),
+                         br(), 
+                         actionButton("do", "Reveal Horoscope"))),
                 htmlOutput("my_horoscope"),
                 imageOutput("my_image")
               )),
@@ -144,24 +148,28 @@ ui = dashboardPage(
 server <- function(input, output, session) {
   
   options(warn = -1)
-  observe({updateSelectInput(session, "day", label = "Day", choices = na.omit(cal[,input$month]))})
+  observe({updateSelectInput(session, "day", label = "Day", 
+                             choices = na.omit(cal[,input$month]))})
   
   # First Tab Output - Text
-  output$my_horoscope = renderText({
+  # Reactive Button - Expression
+  do = observeEvent(input$do, {
     
-    month = input$month
-    day = input$day
-    weekday = weekdays(as.Date(input$weekday))
+    output$my_horoscope = renderText({
+      month = as.character(input$month)
+      day = as.numeric(input$day)
+      weekday = as.character(weekdays(as.Date(input$weekday)))
+      sign = bday.to.sign(day, month)
+      greeting = paste("Your horoscope sign is:", sign)
+      fortune = generate(data, sign, weekday)
+      output = paste(greeting, recombine(fortune), sep = "<br/><br/><br/>")
+      HTML(output)
+    })
     
-    sign = bday.to.sign(day, month)
-    greeting = paste("Your horoscope sign is:", sign, weekday)
-    fortune = generate(data, sign, weekday)
-    
-    HTML(paste(greeting, fortune, sep = "<br/><br/>"))
   })
   
   # First Tab Output - Image
-  output$my_image = renderImage({list(src = "horoscope1.png", 
+  output$my_image = renderImage({list(src = "horoscope1.png",
                                       contentType = "png",
                                       width = 1150, height = 575)}, 
                                 deleteFile = FALSE)
