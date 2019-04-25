@@ -82,6 +82,10 @@ ui = dashboardPage(
     )
   ),
   dashboardBody(
+    # Also add some custom CSS to make the title background area the same
+    # color as the rest of the header.
+    tags$head(tags$style(HTML('.content-wrapper, .right-side {
+                                background-color: #ffffff;'))),
     tabItems(
       
       tabItem(tabName = "introduction",
@@ -170,9 +174,9 @@ server <- function(input, output, session) {
   })
   
   # First Tab Output - Image
-  output$my_image = renderImage({list(src = "horoscope1.png",
+  output$my_image = renderImage({list(src = "imgs/img_1.png",
                                       contentType = "png",
-                                      width = 1150, height = 575)}, 
+                                      width = 600, height = 600)}, 
                                 deleteFile = FALSE)
 
 }
