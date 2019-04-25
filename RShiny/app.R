@@ -9,6 +9,7 @@ library(shiny)
 library(rsconnect)
 library(shinydashboard)
 library(shinythemes)
+library(shinyWidgets)
 library(png)
 library(OpenImageR)
 
