@@ -1,0 +1,12 @@
+name: ArtxML
+title: ArtxML
+username:
+account: jupiek
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 882364
+bundleId: 2045795
+url: https://jupiek.shinyapps.io/ArtxML/
+when: 1556509410.04171
+asMultiple: FALSE
+asStatic: FALSE
