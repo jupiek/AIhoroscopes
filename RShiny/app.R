@@ -77,10 +77,10 @@ recombine = function (list) {
   
   texts = vector(length = 4)
   if (length(elements) == 4) {texts = elements} else {
-    for (i in 1:3) {texts[i] = paste(elements[seq(1,length(elements),group)[i]:i+group-1], collapse = "")}
+    for (i in 1:3) {texts[i] = paste(elements[seq(1,length(elements),group)[i]:i+group-1], collapse = "<br/>")}
   }
   
-  texts[4] = ifelse(length(elements) > group*3, paste(tail(elements, length(elements) - group*3), collapse = " "), "")
+  texts[4] = ifelse(length(elements) > group*3, paste(tail(elements, length(elements) - group*3), collapse = "<br/>"), "")
   
   return(list(texts, paths))
   
@@ -96,9 +96,7 @@ ui = dashboardPage(
   dashboardSidebar(
     sidebarMenu(
       menuItem("Introduction", tabName = "introduction", icon = icon("info")),
-      menuItem("My Horoscope", tabName = "horoscope", icon = icon("star")),
-      menuItem("Process", tabName = "process", icon = icon("cog")),
-      menuItem("Sources", tabName = "sources", icon = icon("link"))
+      menuItem("My Horoscope", tabName = "horoscope", icon = icon("star"))
     )
   ),
   dashboardBody(
@@ -158,19 +156,7 @@ ui = dashboardPage(
               fluidRow(align = "center", imageOutput("image2", inline = TRUE),
                        htmlOutput("text3")),
               fluidRow(align = "center", imageOutput("image3", inline = TRUE),
-                       htmlOutput("text4"))),
-      
-      # Second Tab Content
-      tabItem(tabName = "process",
-              h2("Process & Techniques"),
-              p("Hello"),
-              p("")),
-      
-      # Second Tab Content
-      tabItem(tabName = "sources",
-              h2("Sources"),
-              p("Hello"),
-              p("")))))
+                       htmlOutput("text4"))))))
 
 
 server <- function(input, output, session) {
@@ -190,7 +176,7 @@ server <- function(input, output, session) {
     data = recombine(generate(data, sign, weekday))
     
     output$greeting = renderText({
-      paste("<center>", "Your horoscope sign is: ", sign, "</center>", "<br/><br/>", sep = "")
+      paste("<br/>", "<center>", "<i>", "Your horoscope sign is: ", sign, "<i/>", "</center>", "<br/><br/>", sep = "")
     })
     
     output$text1 = renderText({paste("<center>", data[[1]][1], "</center>", sep = "")})
