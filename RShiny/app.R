@@ -102,8 +102,6 @@ ui = dashboardPage(
     )
   ),
   dashboardBody(
-    # Also add some custom CSS to make the title background area the same
-    # color as the rest of the header.
     tags$head(tags$style(HTML('.content-wrapper, .right-side {
                                 background-color: #ffffff;'))),
     tabItems(
