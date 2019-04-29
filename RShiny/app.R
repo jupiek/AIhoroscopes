@@ -57,13 +57,33 @@ generate = function (data, sign, weekday) {
   horoscopes = filter(data, sign == sign) %>% 
     filter(day_of_week == weekday)
   i = sample(1:nrow(horoscopes), 1)
-  return(as.character(horoscopes$horoscope[i]))
+  return(list(as.character(horoscopes$horoscope[i]),
+              as.character(horoscopes$img_path[i])))
 }
 
-# `recombine` function to split a horoscope by periods and paste with line breaks
-recombine = function (text) {
-  elements = unlist(strsplit(as.character(text), "\\. "))
-  return(paste(elements, collapse = ".<br/><br/>"))
+# `recombine` function to split a horoscope by periods and paste with line breaks and images in between
+recombine = function (list) {
+  
+  elements = unlist(strsplit(list[[1]], "(?<![^!?.])\\s+", perl = TRUE))
+  
+  paths = vector(length = 3)
+  for (i in 1:3) {paths[i] = paste(list[[2]], ".", as.character(i), ".png", sep = "")}
+  
+  if (length(elements) == 1) {elements = c(elements, "", "", "")}
+  if (length(elements) == 2) {elements = c(elements, "", "")}
+  if (length(elements) == 3) {elements = c(elements, "")}
+  
+  group = round(length(elements)/4)
+  
+  texts = vector(length = 4)
+  if (length(elements) == 4) {texts = elements} else {
+    for (i in 1:3) {texts[i] = paste(elements[seq(1,length(elements),group)[i]:i+group-1], collapse = "")}
+  }
+  
+  texts[4] = ifelse(length(elements) > group*3, paste(tail(elements, length(elements) - group*3), collapse = " "), "")
+  
+  return(list(texts, paths))
+  
 }
 
 
@@ -133,9 +153,14 @@ ui = dashboardPage(
                                    language = "en", width = NULL),
                          br(), 
                          actionButton("do", "Reveal Horoscope"))),
-                htmlOutput("my_horoscope"),
-                imageOutput("my_image")
-              )),
+                htmlOutput("greeting"),
+                htmlOutput("text1")),
+              fluidRow(align = "center", imageOutput("image1", inline = TRUE),
+                       htmlOutput("text2")),
+              fluidRow(align = "center", imageOutput("image2", inline = TRUE),
+                       htmlOutput("text3")),
+              fluidRow(align = "center", imageOutput("image3", inline = TRUE),
+                       htmlOutput("text4"))),
       
       # Second Tab Content
       tabItem(tabName = "process",
@@ -160,24 +185,31 @@ server <- function(input, output, session) {
   # Reactive Button - Expression
   do = observeEvent(input$do, {
     
-    output$my_horoscope = renderText({
-      month = as.character(input$month)
-      day = as.numeric(input$day)
-      weekday = as.character(weekdays(as.Date(input$weekday)))
-      sign = bday.to.sign(day, month)
-      greeting = paste("Your horoscope sign is:", sign)
-      fortune = generate(data, sign, weekday)
-      output = paste(greeting, recombine(fortune), sep = "<br/><br/><br/>")
-      HTML(output)
+    month = as.character(input$month)
+    day = as.numeric(input$day)
+    weekday = as.character(weekdays(as.Date(input$weekday)))
+    sign = bday.to.sign(day, month)
+    data = recombine(generate(data, sign, weekday))
+    
+    output$greeting = renderText({
+      paste("<center>", "Your horoscope sign is: ", sign, "</center>", "<br/><br/>", sep = "")
     })
     
-  })
-  
-  # First Tab Output - Image
-  output$my_image = renderImage({list(src = "imgs/img_1.png",
-                                      contentType = "png",
-                                      width = 400, height = 400)}, 
+    output$text1 = renderText({paste("<center>", data[[1]][1], "</center>", sep = "")})
+    output$image1 = renderImage({list(src = data[[2]][1], contentType = "png",
+                                      width = 390, height = 120)}, 
                                 deleteFile = FALSE)
+    output$text2 = renderText({paste("<center>", data[[1]][2], "</center>", sep = "")})
+    output$image2 = renderImage({list(src = data[[2]][2], contentType = "png",
+                                      width = 390, height = 120)}, 
+                                deleteFile = FALSE)
+    output$text3 = renderText({paste("<center>", data[[1]][3], "</center>", sep = "")})
+    output$image3 = renderImage({list(src = data[[2]][3], contentType = "png",
+                                      width = 390, height = 120)}, 
+                                deleteFile = FALSE)
+    output$text4 = renderText({paste("<center>", data[[1]][4], "</center>", sep = "")})
+    
+  })
 
 }
 
