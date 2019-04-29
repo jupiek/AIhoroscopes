@@ -176,7 +176,7 @@ server <- function(input, output, session) {
   # First Tab Output - Image
   output$my_image = renderImage({list(src = "imgs/img_1.png",
                                       contentType = "png",
-                                      width = 600, height = 600)}, 
+                                      width = 400, height = 400)}, 
                                 deleteFile = FALSE)
 
 }

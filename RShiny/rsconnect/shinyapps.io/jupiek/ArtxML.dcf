@@ -5,8 +5,8 @@ account: jupiek
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 882364
-bundleId: 2037525
+bundleId: 2037549
 url: https://jupiek.shinyapps.io/ArtxML/
-when: 1556168272.15281
+when: 1556169863.29768
 asMultiple: FALSE
 asStatic: FALSE
